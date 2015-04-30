@@ -22,10 +22,14 @@ public class TodomvcTest {
     public void enterTasks() {
         open("http://todomvc.com/examples/troopjs_require/#");
 
+        // Initial checking
+        assertTrue($("#main").is(hidden));
+        assertTrue($("#footer").is(hidden));
+
         String t1 = "1. Practice kindness",
                t2 = "=(^.^)=",
                t3 = "- be productive yet calm ;)",
-               t4 = " Don't forget to smile! @#$%^&*() and yaaaaaaaaaaaaaaaaaaaaaaz";
+               t4 = " Don't forget to smile! @#$%^&*() and yaaaaaaaaaaaaaaaaaaaaaaz"; // ось тут text wrapping не працює
 
         List<String> taskList = Arrays.asList(t1, t2, t3, t4);
         for (String task : taskList) {
@@ -37,6 +41,13 @@ public class TodomvcTest {
             assertEquals(taskList.get(i).trim(), $$("#todo-list li.active").get(i).getText());
         }
 
+        // Перевіряю одразу кількість активних тасок
+        activeItems("4");
+        // Потім перевірка для clear-completed коли знаходимось під фільтром All
+        assertTrue($$("#filters a").find(text("All")).has(cssClass("selected")));
+        assertTrue($("#clear-completed").is(hidden));
+        assertTrue($("#clear-completed").innerText().endsWith("(0)"));
+
         // Delete second task
         SelenideElement task = $$("#todo-list li.active").get(1);
         task.hover();
@@ -45,12 +56,15 @@ public class TodomvcTest {
         // Make sure that task was deleted
         assertFalse($$("#todo-list li.active").get(1).getText().startsWith(t2));
 
+        activeItems("3");
+
         // Mark 4th task as a completed
         $$("#todo-list li.active").get(2).shouldHave(text(t4)).find(".toggle").click();
 
         filterActive(2);
         filterCompleted(1);
         backToAll();
+        activeItems("2");
 
         // Clear 4th task
         clearCompleted();
@@ -99,5 +113,10 @@ public class TodomvcTest {
     private void backToAll() {
         $$("#filters a").find(text("All")).click();
         assertTrue($$("#filters a").find(text("All")).has(cssClass("selected")));
+    }
+
+    // Counting of active items
+    private void activeItems(String activeCount) {
+        assertTrue($("#todo-count").getText().startsWith(activeCount));
     }
 }
