@@ -1,14 +1,13 @@
 package com.myfirsttest;
 
-import org.junit.Test;
+        import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
+        import java.util.Arrays;
+        import java.util.List;
 
 
-import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selenide.*;
-import static org.junit.Assert.assertEquals;
+        import static com.codeborne.selenide.Condition.*;
+        import static com.codeborne.selenide.Selenide.*;
 
 public class TodomvcTest {
 
@@ -26,13 +25,13 @@ public class TodomvcTest {
         $("#footer").shouldBe(hidden);
 
         String t1 = "1. Practice kindness",
-               t2 = "=(^.^)=",
-               t3 = "- be productive yet calm ;)",
-               t4 = " Don't forget to smile! @#$%^&*() and yaaaaaaaaaaaaaaaaaaaaaaz"; // ось тут text wrapping не працює
+                t2 = "=(^.^)=",
+                t3 = "- be productive yet calm ;)",
+                t4 = " Don't forget to smile! @#$%^&*() and yaaaaaaaaaaaaaaaaaaaaaaz"; // ось тут text wrapping не працює
 
         List<String> taskList = Arrays.asList(t1, t2, t3, t4);
         for (String task : taskList) {
-           createTask(task);
+            createTask(task);
         }
 
         for (int i = 0; i < taskList.size(); i++) {
@@ -88,7 +87,15 @@ public class TodomvcTest {
         // Make sure that 4th task was deleted
         $$(todoListSelector).shouldHaveSize(2);
 
-        actions().doubleClick($$(todoListSelector).get(1)).perform();
+        // Task editing - appending
+        actions().doubleClick($$(todoListSelector).get(1).find("label")).perform();
+        $$(todoListSelector).get(1).find(".edit").append("appended").pressEnter();
+        $$(todoListSelector).get(1).shouldHave(text("appended"));
+
+        // Task editing - replacing
+        actions().doubleClick($$(todoListSelector).get(0).find("label")).perform();
+        $$(todoListSelector).get(0).find(".edit").val("new task").pressEnter();
+        $$(todoListSelector).get(0).shouldHave(text("new task"));
 
         // Mark ALL tasks as completed
         $("#toggle-all").click();
@@ -107,7 +114,4 @@ public class TodomvcTest {
         $("#new-todo").val(taskName).pressEnter();
     }
 
-    private void taskEditing (int n) {
-        actions().doubleClick($$("#todo-list input").get(n).pressEnter());
-    }
 }
