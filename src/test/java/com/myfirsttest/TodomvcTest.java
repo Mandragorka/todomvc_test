@@ -113,5 +113,4 @@ public class TodomvcTest {
     private void createTask(String taskName) {
         $("#new-todo").val(taskName).pressEnter();
     }
-
 }
