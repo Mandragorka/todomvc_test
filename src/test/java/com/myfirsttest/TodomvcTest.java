@@ -1,6 +1,5 @@
 package com.myfirsttest;
 
-import com.codeborne.selenide.SelenideElement;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -10,21 +9,21 @@ import java.util.List;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-/**
- * Created by Mandragorka on 4/26/15.
- */
 public class TodomvcTest {
 
     @Test
     public void enterTasks() {
+        String todoListSelector = ("#todo-list li"),
+                filterSelector = ("#filters a"),
+                activeTaskSelector = ("#todo-count"),
+                completedTaskSelector = ("#clear-completed");
+
         open("http://todomvc.com/examples/troopjs_require/#");
 
         // Initial checking
-        assertTrue($("#main").is(hidden));
-        assertTrue($("#footer").is(hidden));
+        $("#main").shouldBe(hidden);
+        $("#footer").shouldBe(hidden);
 
         String t1 = "1. Practice kindness",
                t2 = "=(^.^)=",
@@ -36,51 +35,71 @@ public class TodomvcTest {
            createTask(task);
         }
 
-        // Вирішила перевірити не красиво :)
         for (int i = 0; i < taskList.size(); i++) {
-            assertEquals(taskList.get(i).trim(), $$("#todo-list li.active").get(i).getText());
+            $$(todoListSelector).get(i).shouldHave(text(taskList.get(i)));
         }
 
         // Перевіряю одразу кількість активних тасок
-        activeItems("4");
+        $(activeTaskSelector).shouldHave(text("4"));
         // Потім перевірка для clear-completed коли знаходимось під фільтром All
-        assertTrue($$("#filters a").find(text("All")).has(cssClass("selected")));
-        assertTrue($("#clear-completed").is(hidden));
-        assertTrue($("#clear-completed").innerText().endsWith("(0)"));
+        $$(filterSelector).find(text("All")).has(cssClass("selected"));
+        $(completedTaskSelector).shouldBe(hidden).shouldHave("0"); //???
 
         // Delete second task
-        SelenideElement task = $$("#todo-list li.active").get(1);
-        task.hover();
-        task.find(".destroy").click();
+        $$(todoListSelector).get(1).hover();
+        $$(todoListSelector).get(1).find(".destroy").click();
 
         // Make sure that task was deleted
-        assertFalse($$("#todo-list li.active").get(1).getText().startsWith(t2));
-
-        activeItems("3");
+        $$(todoListSelector).get(1).shouldNotHave(text(t2));
+        // Checks count of active items after deleting 2nd task
+        $(activeTaskSelector).shouldHave(text("3"));
 
         // Mark 4th task as a completed
-        $$("#todo-list li.active").get(2).shouldHave(text(t4)).find(".toggle").click();
+        $$(todoListSelector).get(2).shouldHave(text(t4)).find(".toggle").click();
 
-        filterActive(2);
-        filterCompleted(1);
-        backToAll();
-        activeItems("2");
+        // Active filter verification
+        $$(filterSelector).find(text("Active")).click();
+        $$(filterSelector).find(text("Active")).shouldHave(cssClass("selected"));
+        $(".completed").shouldBe(hidden);
+        $$(".active").shouldHaveSize(2);
+
+        // Completed filter verification
+        $$(filterSelector).find(text("Completed")).click();
+        $$(filterSelector).find(text("Completed")).shouldHave(cssClass("selected"));
+        $(".active").shouldBe(hidden);
+        $$(".completed").shouldHaveSize(1);
+
+        // Back to All filter
+        $$(filterSelector).find(text("All")).click();
+        $$(filterSelector).find(text("All")).shouldHave(cssClass("selected"));
+
+        // Checks count of active items
+        $(activeTaskSelector).shouldHave(text("2"));
+        // Checks count of completed items
+        $(completedTaskSelector).shouldHave("1");
 
         // Clear 4th task
-        clearCompleted();
+        $(completedTaskSelector).click();
+
+        // Checks clear-completed after deleting completed tasks
+        $$(filterSelector).find(text("All")).has(cssClass("selected"));
+        $(completedTaskSelector).shouldBe(hidden).shouldHave("0");
 
         // Make sure that 4th task was deleted
-        assertFalse($("#todo-list").getText().contains(t4));
-        // потипу, можна ще ось так
-        //assertEquals(2, $$("#todo-list li.active").size());
+        $$(todoListSelector).shouldHaveSize(2);
+
+        actions().doubleClick($$(todoListSelector).get(1)).perform();
 
         // Mark ALL tasks as completed
-        $("#toggle-all").shouldHave(type("checkbox")).click();
+        $("#toggle-all").click();
+
+        // Checks count of completed items
+        $(completedTaskSelector).shouldHave("2");
 
         // Clear all completed tasks
-        clearCompleted();
+        $(completedTaskSelector).click();
 
-        assertEquals(0, $$("#todo-list li.active").size());
+        $$(todoListSelector).shouldHaveSize(0);
     }
 
     // Method for creating new task
@@ -88,35 +107,7 @@ public class TodomvcTest {
         $("#new-todo").val(taskName).pressEnter();
     }
 
-    // Method for deleting completed tasks
-    private void clearCompleted() {
-        $("#clear-completed").click();
-    }
-
-    // Method for Active filter check
-    private void filterActive(int activeCount) {
-        $$("#filters a").find(text("Active")).click();
-        assertTrue($$("#filters a").find(text("Active")).has(cssClass("selected")));
-        assertTrue($$(".completed").filter(visible).isEmpty());
-        assertEquals(activeCount, $$(".active").size());
-    }
-
-    // Method for Completed filter check
-    private void filterCompleted(int completedCount) {
-        $$("#filters a").find(text("Completed")).click();
-        assertTrue($$("#filters a").find(text("Completed")).has(cssClass("selected")));
-        assertTrue($$(".active").filter(visible).isEmpty());
-        assertEquals(completedCount, $$(".completed").size());
-    }
-
-    // Method for returning to full list
-    private void backToAll() {
-        $$("#filters a").find(text("All")).click();
-        assertTrue($$("#filters a").find(text("All")).has(cssClass("selected")));
-    }
-
-    // Counting of active items
-    private void activeItems(String activeCount) {
-        assertTrue($("#todo-count").getText().startsWith(activeCount));
+    private void taskEditing (int n) {
+        actions().doubleClick($$("#todo-list input").get(n).pressEnter());
     }
 }
