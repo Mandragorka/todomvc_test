@@ -2,41 +2,35 @@ package com.myfirsttest;
 
         import org.junit.Test;
 
-        import java.util.Arrays;
         import java.util.List;
 
-
+        import static com.codeborne.selenide.CollectionCondition.exactTexts;
         import static com.codeborne.selenide.Condition.*;
         import static com.codeborne.selenide.Selenide.*;
+        import static java.util.Arrays.asList;
 
 public class TodomvcTest {
 
     @Test
     public void enterTasks() {
-        String todoListSelector = ("#todo-list li"),
-                filterSelector = ("#filters a"),
-                activeTaskSelector = ("#todo-count"),
-                completedTaskSelector = ("#clear-completed");
+        String todoListSelector = ("#todo-list li");
+        String filterSelector = ("#filters a");
+        String activeTaskSelector = ("#todo-count");
+        String completedTaskSelector = ("#clear-completed");
+
+        String t1 = "1. Practice kindness";
+        String t2 = "=(^.^)=";
+        String t3 = "- be productive yet calm ;)";
+        String t4 = " Don't forget to smile! @#$%^&*() and yaaaaaaaaaaaaaaaaaaaaaaz"; // ось тут text wrapping не працює
 
         open("http://todomvc.com/examples/troopjs_require/#");
 
-        // Initial checking
-        $("#main").shouldBe(hidden);
-        $("#footer").shouldBe(hidden);
-
-        String t1 = "1. Practice kindness",
-                t2 = "=(^.^)=",
-                t3 = "- be productive yet calm ;)",
-                t4 = " Don't forget to smile! @#$%^&*() and yaaaaaaaaaaaaaaaaaaaaaaz"; // ось тут text wrapping не працює
-
-        List<String> taskList = Arrays.asList(t1, t2, t3, t4);
-        for (String task : taskList) {
-            createTask(task);
+        List<String> taskList = asList(t1, t2, t3, t4);
+        for (String t : taskList) {
+            $("#new-todo").val(t).pressEnter();
         }
 
-        for (int i = 0; i < taskList.size(); i++) {
-            $$(todoListSelector).get(i).shouldHave(text(taskList.get(i)));
-        }
+        $$(todoListSelector).shouldHave(exactTexts(t1, t2, t3, t4));
 
         // Перевіряю одразу кількість активних тасок
         $(activeTaskSelector).shouldHave(text("4"));
@@ -107,10 +101,5 @@ public class TodomvcTest {
         $(completedTaskSelector).click();
 
         $$(todoListSelector).shouldHaveSize(0);
-    }
-
-    // Method for creating new task
-    private void createTask(String taskName) {
-        $("#new-todo").val(taskName).pressEnter();
     }
 }
