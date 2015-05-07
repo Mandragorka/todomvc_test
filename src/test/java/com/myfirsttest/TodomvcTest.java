@@ -35,7 +35,7 @@ public class TodomvcTest {
         // Перевіряю одразу кількість активних тасок
         $(activeTaskSelector).shouldHave(text("4"));
         // Потім перевірка для clear-completed коли знаходимось під фільтром All
-        $$(filterSelector).find(text("All")).has(cssClass("selected"));
+        $$(filterSelector).find(text("All")).shouldHave(cssClass("selected"));
         $(completedTaskSelector).shouldBe(hidden).shouldHave("0"); //???
 
         // Delete second task
