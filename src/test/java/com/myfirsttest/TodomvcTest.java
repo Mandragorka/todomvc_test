@@ -1,104 +1,118 @@
 package com.myfirsttest;
 
-        import com.codeborne.selenide.ElementsCollection;
-        import com.codeborne.selenide.SelenideElement;
-        import org.junit.Test;
-
-        import java.util.List;
-
-        import static com.codeborne.selenide.CollectionCondition.exactTexts;
-        import static com.codeborne.selenide.Condition.*;
-        import static com.codeborne.selenide.Selenide.*;
-        import static java.util.Arrays.asList;
+import org.junit.Test;
+import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.SelenideElement;
+import static com.codeborne.selenide.CollectionCondition.empty;
+import static com.codeborne.selenide.CollectionCondition.exactTexts;
+import static com.codeborne.selenide.CollectionCondition.texts;
+import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selenide.*;
 
 public class TodomvcTest {
 
+    public static ElementsCollection tasks = $$("#todo-list li");
+    public static SelenideElement itemsLeftCounter = $("#todo-count");
+    public static SelenideElement clearCompleted = $("#clear-completed");
+
+    public static SelenideElement filterActive = $("[href='#/active']");
+    public static SelenideElement filterAll = $("[href='#/']");
+    public static SelenideElement filterCompleted = $("[href='#/completed']");
+
+
+    private void addTask(String task) {
+        $("#new-todo").val(task).pressEnter();
+    }
+
+    private void destroyTask(String task) {
+        tasks.find(text(task)).hover();
+        tasks.find(text(task)).find(".destroy").click();
+    }
+
+    private void toggleTask(String task) {
+        tasks.findBy(text(task)).find(".toggle").click();
+    }
+
+    private void editTask(String taskToEdit, String newTask) {
+        actions().doubleClick(tasks.findBy(text(taskToEdit)).find("label")).perform();
+        tasks.find(cssClass("editing")).find(".edit").val(newTask).pressEnter();
+    }
+
+    private void assertActiveCount(int n) {
+        itemsLeftCounter.find("strong").shouldHave(text(Integer.toString(n)));
+    }
+
+    private void assertCompletedCount(int n) {
+        clearCompleted.shouldHave(text("(" + n + ")"));
+    }
+
     @Test
     public void enterTasks() {
-        ElementsCollection tasks = $$("#todo-list li");
-        ElementsCollection filters = $$("#filters a");
-        SelenideElement activeCount = $("#todo-count");
-        SelenideElement clearCompleted = $("#clear-completed");
-
-        String t1 = "1. Practice kindness";
-        String t2 = "=(^.^)=";
-        String t3 = "- be productive yet calm ;)";
-        String t4 = " Don't forget to smile! @#$%^&*() and yaaaaaaaaaaaaaaaaaaaaaaz"; // ось тут text wrapping не працює
-
         open("http://todomvc.com/examples/troopjs_require/#");
 
-        List<String> taskList = asList(t1, t2, t3, t4);
-        for (String t : taskList) {
-            $("#new-todo").val(t).pressEnter();
-        }
+        addTask("1");
+        addTask("2");
+        addTask("3");
+        addTask("4");
+        tasks.shouldHave(exactTexts("1", "2", "3", "4"));
+        assertActiveCount(4);
 
-        tasks.shouldHave(exactTexts(t1, t2, t3, t4));
+        destroyTask("2");
+        tasks.shouldHave(exactTexts("1", "3", "4"));
+        assertActiveCount(3);
 
-        // Перевіряю одразу кількість активних тасок
-        activeCount.shouldHave(text("4"));
+        toggleTask("4");
+        assertActiveCount(2);
+        assertCompletedCount(1);
 
-        // Delete second task
-        tasks.get(1).hover();
-        tasks.get(1).find(".destroy").click();
+        filterActive.click();
+        addTask("5");
+        tasks.filter(visible).shouldHave(texts("1", "3", "5"));
+        editTask("5", "5 edited");
+        assertActiveCount(3);
+        assertCompletedCount(1);
+        tasks.filter(visible).shouldHave(texts("1", "3", "5 edited"));
+        destroyTask("5 edited");
+        assertActiveCount(2);
+        tasks.filter(visible).shouldHave(texts("1", "3"));
+        toggleTask("3");
+        assertActiveCount(1);
+        assertCompletedCount(2);
+        tasks.filter(visible).shouldHave(texts("1"));
 
-        // Make sure that task was deleted
-        tasks.get(1).shouldNotHave(text(t2));
-        // Checks count of active items after deleting 2nd task
-        activeCount.shouldHave(text("3"));
-
-        // Mark 4th task as a completed
-        tasks.get(2).shouldHave(text(t4)).find(".toggle").click();
-
-        // Active filter verification
-        filters.find(text("Active")).click();
-        filters.find(text("Active")).shouldHave(cssClass("selected"));
-        $(".completed").shouldBe(hidden);
-        $$(".active").shouldHaveSize(2);
-
-        // Completed filter verification
-        filters.find(text("Completed")).click();
-        filters.find(text("Completed")).shouldHave(cssClass("selected"));
-        $(".active").shouldBe(hidden);
-        $$(".completed").shouldHaveSize(1);
-
-        // Back to All filter
-        filters.find(text("All")).click();
-        filters.find(text("All")).shouldHave(cssClass("selected"));
-
-        // Checks count of active items
-        activeCount.shouldHave(text("2"));
-        // Checks count of completed items
-        clearCompleted.shouldHave("1");
-
-        // Clear 4th task
+        addTask("6");
+        toggleTask("6");
+        filterCompleted.click();
+        assertCompletedCount(3);
+        assertActiveCount(1);
+        tasks.filter(visible).shouldHave(texts("3", "4", "6"));
+        toggleTask("3");
+        assertActiveCount(2);
+        assertCompletedCount(2);
+        tasks.filter(visible).shouldHave(texts("4", "6"));
+        editTask("6", "6 edited");
+        tasks.filter(visible).shouldHave(texts("4", "6 edited"));
+        destroyTask("6");
+        assertCompletedCount(1);
+        assertActiveCount(2);
+        tasks.filter(visible).shouldHave(texts("4"));
         clearCompleted.click();
 
-        // Checks clear-completed after deleting completed tasks
-        filters.find(text("All")).has(cssClass("selected"));
-        clearCompleted.shouldBe(hidden);
+        filterAll.click();
+        tasks.shouldHave(exactTexts("1", "3"));
+        toggleTask("3");
+        assertActiveCount(1);
+        assertCompletedCount(1);
+        clearCompleted.click();
+        tasks.shouldHave(exactTexts("1"));
+        editTask("1", "1 edited");
+        tasks.shouldHave(exactTexts("1 edited"));
 
-        // Make sure that 4th task was deleted
-        tasks.shouldHaveSize(2);
-
-        // Task editing - appending
-        actions().doubleClick(tasks.get(1).find("label")).perform();
-        tasks.get(1).find(".edit").append("appended").pressEnter();
-        tasks.get(1).shouldHave(text("appended"));
-
-        // Task editing - replacing
-        actions().doubleClick(tasks.get(0).find("label")).perform();
-        tasks.get(0).find(".edit").val("new task").pressEnter();
-        tasks.get(0).shouldHave(text("new task"));
-
-        // Mark ALL tasks as completed
         $("#toggle-all").click();
+        assertActiveCount(0);
+        assertCompletedCount(1);
 
-        // Checks count of completed items
-        clearCompleted.shouldHave("2");
-
-        // Clear all completed tasks
         clearCompleted.click();
-
-        tasks.shouldHaveSize(0);
+        tasks.shouldBe(empty);
     }
 }
