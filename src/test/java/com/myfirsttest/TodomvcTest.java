@@ -95,7 +95,7 @@ public class TodomvcTest {
         assertCompletedCount(1);
         assertActiveCount(2);
         assertVisibleTasks("4");
-        CLEAR_COMPLETED.click();
+        clearCompleted();
 
         /* Final ALL filter actions */
 
@@ -105,7 +105,7 @@ public class TodomvcTest {
         toggleTask("3");
         assertActiveCount(1);
         assertCompletedCount(1);
-        CLEAR_COMPLETED.click();
+        clearCompleted();
         assertVisibleTasks("1");
 
         // Editing of existing task
@@ -116,7 +116,7 @@ public class TodomvcTest {
         $("#toggle-all").click();
         assertActiveCount(0);
         assertCompletedCount(1);
-        CLEAR_COMPLETED.click();
+        clearCompleted();
         TASKS.shouldBe(empty);
     }
 
@@ -130,6 +130,10 @@ public class TodomvcTest {
 
     private void toggleTask(String task) {
         TASKS.findBy(exactText(task)).find(".toggle").click();
+    }
+
+    private void clearCompleted(){
+        CLEAR_COMPLETED.click();
     }
 
     private void editTask(String taskToEdit, String newTask) {
