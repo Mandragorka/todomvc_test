@@ -125,8 +125,7 @@ public class TodomvcTest {
     }
 
     private void destroyTask(String task) {
-        TASKS.find(exactText(task)).hover();
-        TASKS.find(exactText(task)).find(".destroy").click();
+        TASKS.find(exactText(task)).hover().find(".destroy").click();
     }
 
     private void toggleTask(String task) {
