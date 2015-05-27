@@ -87,9 +87,10 @@ public class TodomvcTest {
         assertCompletedCount(2);
         assertVisibleTasks("4", "6");
 
-        // Editing of existing task and then removing completed
+        // Editing of existing task
         editTask("6", "6 edited");
         assertVisibleTasks("4", "6 edited");
+        // Delete edited task and then removing all completed tasks
         destroyTask("6 edited");
         assertCompletedCount(1);
         assertActiveCount(2);
