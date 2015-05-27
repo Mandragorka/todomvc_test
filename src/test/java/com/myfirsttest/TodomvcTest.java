@@ -16,7 +16,7 @@ import static com.codeborne.selenide.Selenide.open;
 
 public class TodomvcTest {
 
-    public static final ElementsCollection TASKS = $$("#todo-list li");
+    public static final ElementsCollection TASKS = $$("#todo-list>li");
     public static final SelenideElement NEW_TASK = $("#new-todo");
     public static final SelenideElement ITEMS_LEFT_COUNT = $("#todo-count");
     public static final SelenideElement CLEAR_COMPLETED = $("#clear-completed");
@@ -77,8 +77,6 @@ public class TodomvcTest {
         /* COMPLETED filter actions */
 
         FILTER_COMPLETED.click();
-        assertCompletedCount(3);
-        assertActiveCount(1);
         assertVisibleTasks("3", "4", "6");
 
         // Mark task as completed
