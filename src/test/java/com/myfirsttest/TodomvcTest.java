@@ -35,12 +35,12 @@ public class TodomvcTest {
         addTask("2");
         addTask("3");
         addTask("4");
-        assertVisibleTasks("1", "2", "3", "4");
+        assertShownTasks("1", "2", "3", "4");
         assertActiveCount(4);
 
         // Delete task
         destroyTask("2");
-        assertVisibleTasks("1", "3", "4");
+        assertShownTasks("1", "3", "4");
         assertActiveCount(3);
 
         // Mark task as completed
@@ -54,61 +54,61 @@ public class TodomvcTest {
         // Create task under Active filter
         addTask("5");
         addTask("6");
-        assertVisibleTasks("1", "3", "5", "6");
+        assertShownTasks("1", "3", "5", "6");
 
         // Editing of existing task
         editTask("5", "5 edited");
         assertActiveCount(4);
         assertCompletedCount(1);
-        assertVisibleTasks("1", "3", "5 edited", "6");
+        assertShownTasks("1", "3", "5 edited", "6");
 
         // Delete task
         destroyTask("5 edited");
         assertActiveCount(3);
-        assertVisibleTasks("1", "3", "6");
+        assertShownTasks("1", "3", "6");
 
         // Mark tasks as completed
         toggleTask("3");
         toggleTask("6");
         assertActiveCount(1);
         assertCompletedCount(3);
-        assertVisibleTasks("1");
+        assertShownTasks("1");
 
         /* COMPLETED filter actions */
 
         FILTER_COMPLETED.click();
-        assertVisibleTasks("3", "4", "6");
+        assertShownTasks("3", "4", "6");
 
         // Mark task as completed
         toggleTask("3");
         assertActiveCount(2);
         assertCompletedCount(2);
-        assertVisibleTasks("4", "6");
+        assertShownTasks("4", "6");
 
         // Editing of existing task
         editTask("6", "6 edited");
-        assertVisibleTasks("4", "6 edited");
+        assertShownTasks("4", "6 edited");
         // Delete edited task and then removing all completed tasks
         destroyTask("6 edited");
         assertCompletedCount(1);
         assertActiveCount(2);
-        assertVisibleTasks("4");
+        assertShownTasks("4");
         clearCompleted();
 
         /* Final ALL filter actions */
 
         FILTER_ALL.click();
-        assertVisibleTasks("1", "3");
+        assertShownTasks("1", "3");
         //Mark task as completed and then removing completed
         toggleTask("3");
         assertActiveCount(1);
         assertCompletedCount(1);
         clearCompleted();
-        assertVisibleTasks("1");
+        assertShownTasks("1");
 
         // Editing of existing task
         editTask("1", "1 edited");
-        assertVisibleTasks("1 edited");
+        assertShownTasks("1 edited");
 
         // Mark all left tasks as completed and their removing
         $("#toggle-all").click();
@@ -139,7 +139,7 @@ public class TodomvcTest {
         TASKS.find(cssClass("editing")).find(".edit").val(newTask).pressEnter();
     }
 
-    private void assertVisibleTasks(String ... visibleTasks) {
+    private void assertShownTasks(String... visibleTasks) {
         TASKS.filter(visible).shouldHave(exactTexts(visibleTasks));
     }
 
