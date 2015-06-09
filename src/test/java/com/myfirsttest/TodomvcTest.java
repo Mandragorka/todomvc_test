@@ -80,7 +80,7 @@ public class TodomvcTest {
         editTask("a", "all - a");
         assertShownTasks("all - a");
 
-        // Mark all left tasks as completed and their removing
+        // Mark all left tasks as completed and then their removing
         $("#toggle-all").click();
         assertActiveCount(0);
         //assertCompletedCount(1);
