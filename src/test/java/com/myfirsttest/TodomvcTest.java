@@ -2,6 +2,8 @@ package com.myfirsttest;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static com.codeborne.selenide.CollectionCondition.empty;
@@ -12,6 +14,7 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.executeJavaScript;
 import static com.codeborne.selenide.Selenide.open;
 
 public class TodomvcTest {
@@ -25,97 +28,152 @@ public class TodomvcTest {
     public static final SelenideElement FILTER_ALL = $("[href='#/']");
     public static final SelenideElement FILTER_COMPLETED = $("[href='#/completed']");
 
-    @Test
-    public void todoMvcE2e() {
+    @Before
+    public void setUp() {
         open("http://todomvc.com/examples/troopjs_require/#");
-        /* ALL filter actions */
+    }
 
-        // Create tasks
-        addTask("1");
-        addTask("2");
-        addTask("3");
-        addTask("4");
-        assertShownTasks("1", "2", "3", "4");
+    @After
+    public void tearDown() {
+        executeJavaScript("localStorage.clear()");
+        open("http://todomvc.com/");
+    }
+
+    @Test
+    public void testAtAllFilter() {
+        // Precondition
+        addTask("a");
+        addTask("b");
+        addTask("c");
+        addTask("d");
+        assertShownTasks("a", "b", "c", "d");
         assertActiveCount(4);
 
         // Delete task
-        destroyTask("2");
-        assertShownTasks("1", "3", "4");
+        destroyTask("b");
+        assertShownTasks("a", "c", "d");
         assertActiveCount(3);
 
         // Mark task as completed
-        toggleTask("4");
+        toggleTask("d");
         assertActiveCount(2);
-        assertCompletedCount(1);
+        //assertCompletedCount(1);
 
-         /* ACTIVE filter actions */
-
-        FILTER_ACTIVE.click();
-        // Create task under Active filter
-        addTask("5");
-        addTask("6");
-        assertShownTasks("1", "3", "5", "6");
-
-        // Editing of existing task
-        editTask("5", "5 edited");
-        assertActiveCount(4);
-        assertCompletedCount(1);
-        assertShownTasks("1", "3", "5 edited", "6");
-
-        // Delete task
-        destroyTask("5 edited");
-        assertActiveCount(3);
-        assertShownTasks("1", "3", "6");
-
-        // Mark tasks as completed
-        toggleTask("3");
-        toggleTask("6");
+        //Mark task as completed and then removing completed
+        toggleTask("c");
         assertActiveCount(1);
-        assertCompletedCount(3);
-        assertShownTasks("1");
+        //assertCompletedCount(2);
 
-        /* COMPLETED filter actions */
+        // Displaying tasks at active filter
+        FILTER_ACTIVE.click();
+        assertShownTasks("a");
 
+        // Displaying tasks at completed filter
         FILTER_COMPLETED.click();
-        assertShownTasks("3", "4", "6");
-
-        // Mark task as completed
-        toggleTask("3");
-        assertActiveCount(2);
-        assertCompletedCount(2);
-        assertShownTasks("4", "6");
-
-        // Editing of existing task
-        editTask("6", "6 edited");
-        assertShownTasks("4", "6 edited");
-        // Delete edited task and then removing all completed tasks
-        destroyTask("6 edited");
-        assertCompletedCount(1);
-        assertActiveCount(2);
-        assertShownTasks("4");
-        clearCompleted();
-
-        /* Final ALL filter actions */
+        assertShownTasks("c", "d");
 
         FILTER_ALL.click();
-        assertShownTasks("1", "3");
-        //Mark task as completed and then removing completed
-        toggleTask("3");
-        assertActiveCount(1);
-        assertCompletedCount(1);
         clearCompleted();
-        assertShownTasks("1");
+        assertShownTasks("a");
 
         // Editing of existing task
-        editTask("1", "1 edited");
-        assertShownTasks("1 edited");
+        editTask("a", "all - a");
+        assertShownTasks("all - a");
 
         // Mark all left tasks as completed and their removing
         $("#toggle-all").click();
         assertActiveCount(0);
-        assertCompletedCount(1);
+        //assertCompletedCount(1);
         clearCompleted();
         TASKS.shouldBe(empty);
+    }
+
+    @Test
+    public void testAtActiveFilter() {
+        // Precondition
+        addTask("a");
+        addTask("b");
+        assertShownTasks("a", "b");
+        assertActiveCount(2);
+
+        FILTER_ACTIVE.click();
+        // Create task under Active filter
+        addTask("c");
+        assertShownTasks("a", "b", "c");
+        assertActiveCount(3);
+
+        // Editing of existing task
+        editTask("a", "active - a");
+        assertShownTasks("active - a", "b", "c");
+
+        // Delete task
+        destroyTask("active - a");
+        assertActiveCount(2);
+        assertShownTasks("b", "c");
+
+        // Mark tasks as completed
+        toggleTask("c");
+        assertActiveCount(1);
+        //assertCompletedCount(1);
+        assertShownTasks("b");
+
+        // Displaying tasks at active filter
+        FILTER_ACTIVE.click();
+        assertShownTasks("b");
+
+        // Displaying tasks at completed filter
+        FILTER_COMPLETED.click();
+        assertShownTasks("c");
+
+        FILTER_ALL.click();
+        // Mark task as reopened
+        toggleTask("c");
+        assertActiveCount(2);
+
+        // Displaying tasks at all filter
+        FILTER_ALL.click();
+        assertShownTasks("b", "c");
+
+    }
+
+    @Test
+    public void testAtCompletedFilter() {
+        // Precondition
+        addTask("a");
+        addTask("b");
+        addTask("c");
+        assertShownTasks("a", "b", "c");
+        $("#toggle-all").click();
+
+        FILTER_COMPLETED.click();
+        assertShownTasks("a", "b", "c");
+        assertActiveCount(0);
+
+        // Mark task as reopened
+        toggleTask("c");
+        assertActiveCount(1);
+        //assertCompletedCount(2);
+        assertShownTasks("a", "b");
+
+        // Editing of existing task
+        editTask("b", "completed - b");
+        assertShownTasks("a", "completed - b");
+        // Delete edited task and then removing all completed tasks
+        destroyTask("completed - b");
+        //assertCompletedCount(1);
+        assertActiveCount(1);
+        assertShownTasks("a");
+
+        // Displaying tasks at active filter
+        FILTER_ACTIVE.click();
+        assertShownTasks("c");
+
+        // Displaying tasks at all filter
+        FILTER_ALL.click();
+        assertShownTasks("a", "c");
+
+        FILTER_COMPLETED.click();
+        clearCompleted();
     }
 
     private void addTask(String task) {
