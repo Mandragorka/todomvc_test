@@ -14,7 +14,7 @@ public class OpenTodoMVCWithClearedDataBeforeEachTest extends WithReporteScreens
     }
 
     @After
-    public void tearDown() {
+    public void clearData() {
         executeJavaScript("localStorage.clear()");
         open("http://todomvc.com/");
     }

@@ -5,6 +5,7 @@ import com.codeborne.selenide.Screenshots;
 import com.codeborne.selenide.SelenideElement;
 import com.google.common.io.Files;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import ru.yandex.qatools.allure.annotations.Attachment;
 import ru.yandex.qatools.allure.annotations.Step;
@@ -20,6 +21,8 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.executeJavaScript;
+import static com.codeborne.selenide.Selenide.open;
 
 
 public class TodomvcTest extends OpenTodoMVCWithClearedDataAfterEachTest {
@@ -29,55 +32,61 @@ public class TodomvcTest extends OpenTodoMVCWithClearedDataAfterEachTest {
     public static final SelenideElement ITEMS_LEFT_COUNT = $("#todo-count");
     public static final SelenideElement CLEAR_COMPLETED = $("#clear-completed");
 
-    public static final SelenideElement FILTER_ACTIVE = $("[href='#/active']");
-    public static final SelenideElement FILTER_ALL = $("[href='#/']");
-    public static final SelenideElement FILTER_COMPLETED = $("[href='#/completed']");
+    @Before
+    public void setUp() {
+        open("http://todomvc.com/examples/troopjs_require/#");
+    }
+
+    @After
+    public void clearData() {
+        executeJavaScript("localStorage.clear()");
+        open("http://todomvc.com/");
+    }
 
     @Test
     public void testAtAllFilter() {
+
         // Precondition
         addTask("a");
         addTask("b");
         addTask("c");
         addTask("d");
         assertShownTasks("a", "b", "c", "d");
-        assertActiveCount(4);
+        assertItemsLeftCounter(4);
 
         // Delete task
         destroyTask("b");
         assertShownTasks("a", "c", "d");
-        assertActiveCount(3);
+        assertItemsLeftCounter(3);
 
-        // Mark task as completed
+        // Mark tasks as completed
         toggleTask("d");
-        assertActiveCount(2);
-        //assertCompletedCount(1);
-
-        //Mark task as completed and then removing completed
+        assertItemsLeftCounter(2);
+        //page.assertCompletedCount(1);
         toggleTask("c");
-        assertActiveCount(1);
-        //assertCompletedCount(2);
+        assertItemsLeftCounter(1);
+        //page.assertCompletedCount(2);
 
         // Displaying tasks at active filter
-        FILTER_ACTIVE.click();
+        filterActive();
         assertShownTasks("a");
 
         // Displaying tasks at completed filter
-        FILTER_COMPLETED.click();
+        filterCompleted();
         assertShownTasks("c", "d");
 
-        FILTER_ALL.click();
+        filterAll();
         clearCompleted();
         assertShownTasks("a");
 
         // Editing of existing task
-        editTask("a", "all - a");
-        assertShownTasks("all - a");
+        editTask("a", "all: a edited");
+        assertShownTasks("all: a edited");
 
         // Mark all left tasks as completed and then their removing
         $("#toggle-all").click();
-        assertActiveCount(0);
-        //assertCompletedCount(1);
+        assertItemsLeftCounter(0);
+        //page.assertCompletedCount(1);
         clearCompleted();
         TASKS.shouldBe(empty);
     }
@@ -88,44 +97,40 @@ public class TodomvcTest extends OpenTodoMVCWithClearedDataAfterEachTest {
         addTask("a");
         addTask("b");
         assertShownTasks("a", "b");
-        assertActiveCount(2);
+        assertItemsLeftCounter(2);
 
-        FILTER_ACTIVE.click();
+        filterActive();
         // Create task under Active filter
         addTask("c");
         assertShownTasks("a", "b", "c");
-        assertActiveCount(3);
+        assertItemsLeftCounter(3);
 
         // Editing of existing task
-        editTask("a", "active - a");
-        assertShownTasks("active - a", "b", "c");
+        editTask("a", "active: a edited");
+        assertShownTasks("active: a edited", "b", "c");
 
         // Delete task
-        destroyTask("active - a");
-        assertActiveCount(2);
+        destroyTask("active: a edited");
+        assertItemsLeftCounter(2);
         assertShownTasks("b", "c");
 
         // Mark tasks as completed
         toggleTask("c");
-        assertActiveCount(1);
-        //assertCompletedCount(1);
-        assertShownTasks("b");
-
-        // Displaying tasks at active filter
-        FILTER_ACTIVE.click();
+        assertItemsLeftCounter(1);
+        //page.assertCompletedCount(1);
         assertShownTasks("b");
 
         // Displaying tasks at completed filter
-        FILTER_COMPLETED.click();
+        filterCompleted();
         assertShownTasks("c");
 
-        FILTER_ALL.click();
+        filterAll();
         // Mark task as reopened
         toggleTask("c");
-        assertActiveCount(2);
+        assertItemsLeftCounter(2);
 
         // Displaying tasks at all filter
-        FILTER_ALL.click();
+        filterActive();
         assertShownTasks("b", "c");
 
     }
@@ -139,37 +144,52 @@ public class TodomvcTest extends OpenTodoMVCWithClearedDataAfterEachTest {
         assertShownTasks("a", "b", "c");
         $("#toggle-all").click();
 
-        FILTER_COMPLETED.click();
+        filterCompleted();
         assertShownTasks("a", "b", "c");
-        assertActiveCount(0);
+        assertItemsLeftCounter(0);
 
         // Mark task as reopened
         toggleTask("c");
-        assertActiveCount(1);
-        //assertCompletedCount(2);
+        assertItemsLeftCounter(1);
+        //page.assertCompletedCount(2);
         assertShownTasks("a", "b");
 
         // Editing of existing task
-        editTask("b", "completed: - b edited");
-        assertShownTasks("a", "completed: - b edited");
+        editTask("b", "completed: b edited");
+        assertShownTasks("a", "completed: b edited");
         // Delete edited task and then removing all completed tasks
-        destroyTask("completed - b");
-        //assertCompletedCount(1);
-        assertActiveCount(1);
+        destroyTask("completed: b edited");
+        //page.assertCompletedCount(1);
+        assertItemsLeftCounter(1);
         assertShownTasks("a");
 
         // Displaying tasks at active filter
-        FILTER_ACTIVE.click();
+        filterActive();
         assertShownTasks("c");
 
         // Displaying tasks at all filter
-        FILTER_ALL.click();
+        filterAll();
         assertShownTasks("a", "c");
 
-        FILTER_COMPLETED.click();
+        filterCompleted();
         clearCompleted();
     }
 
+
+    @Step
+    public void filterAll() {
+        $("[href='#/']").click();
+    }
+
+    @Step
+    public void filterActive() {
+        $("[href='#/active']").click();
+    }
+
+    @Step
+    public void filterCompleted() {
+        $("[href='#/completed']").click();
+    }
     @Step
     private void addTask(String text) {
         NEW_TASK.val(text).pressEnter();
@@ -200,7 +220,7 @@ public class TodomvcTest extends OpenTodoMVCWithClearedDataAfterEachTest {
         TASKS.filter(visible).shouldHave(exactTexts(visibleTasks));
     }
 
-    private void assertActiveCount(int n) {
+    private void assertItemsLeftCounter(int n) {
         ITEMS_LEFT_COUNT.find("strong").shouldHave(exactText(Integer.toString(n)));
     }
 

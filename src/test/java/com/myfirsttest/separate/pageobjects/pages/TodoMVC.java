@@ -20,9 +20,20 @@ public class TodoMVC {
     public final SelenideElement ITEMS_LEFT_COUNT = $("#todo-count");
     public final SelenideElement CLEAR_COMPLETED = $("#clear-completed");
 
-    public final SelenideElement FILTER_ACTIVE = $("[href='#/active']");
-    public final SelenideElement FILTER_ALL = $("[href='#/']");
-    public final SelenideElement FILTER_COMPLETED = $("[href='#/completed']");
+    @Step
+    public void filterAll() {
+        $("[href='#/']").click();
+    }
+
+    @Step
+    public void filterActive() {
+        $("[href='#/active']").click();
+    }
+
+    @Step
+    public void filterCompleted() {
+        $("[href='#/completed']").click();
+    }
 
     @Step
     public void addTask(String text) {
@@ -54,7 +65,7 @@ public class TodoMVC {
         TASKS.filter(visible).shouldHave(exactTexts(visibleTasks));
     }
 
-    public void assertActiveCount(int n) {
+    public void assertItemsLeftCounter(int n) {
         ITEMS_LEFT_COUNT.find("strong").shouldHave(exactText(Integer.toString(n)));
     }
 
