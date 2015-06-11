@@ -1,10 +1,16 @@
-package com.myfirsttest;
+package com.myfirsttest.prettify;
 
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Screenshots;
 import com.codeborne.selenide.SelenideElement;
+import com.google.common.io.Files;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import ru.yandex.qatools.allure.annotations.Attachment;
+import ru.yandex.qatools.allure.annotations.Step;
+
+import java.io.File;
+import java.io.IOException;
 
 import static com.codeborne.selenide.CollectionCondition.empty;
 import static com.codeborne.selenide.CollectionCondition.exactTexts;
@@ -14,10 +20,9 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
-import static com.codeborne.selenide.Selenide.executeJavaScript;
-import static com.codeborne.selenide.Selenide.open;
 
-public class TodomvcTest {
+
+public class TodomvcTest extends OpenTodoMVCWithClearedDataAfterEachTest {
 
     public static final ElementsCollection TASKS = $$("#todo-list>li");
     public static final SelenideElement NEW_TASK = $("#new-todo");
@@ -27,17 +32,6 @@ public class TodomvcTest {
     public static final SelenideElement FILTER_ACTIVE = $("[href='#/active']");
     public static final SelenideElement FILTER_ALL = $("[href='#/']");
     public static final SelenideElement FILTER_COMPLETED = $("[href='#/completed']");
-
-    @Before
-    public void setUp() {
-        open("http://todomvc.com/examples/troopjs_require/#");
-    }
-
-    @After
-    public void tearDown() {
-        executeJavaScript("localStorage.clear()");
-        open("http://todomvc.com/");
-    }
 
     @Test
     public void testAtAllFilter() {
@@ -156,8 +150,8 @@ public class TodomvcTest {
         assertShownTasks("a", "b");
 
         // Editing of existing task
-        editTask("b", "completed - b");
-        assertShownTasks("a", "completed - b");
+        editTask("b", "completed: - b edited");
+        assertShownTasks("a", "completed: - b edited");
         // Delete edited task and then removing all completed tasks
         destroyTask("completed - b");
         //assertCompletedCount(1);
@@ -176,25 +170,30 @@ public class TodomvcTest {
         clearCompleted();
     }
 
-    private void addTask(String task) {
-        NEW_TASK.val(task).pressEnter();
+    @Step
+    private void addTask(String text) {
+        NEW_TASK.val(text).pressEnter();
     }
 
-    private void destroyTask(String task) {
-        TASKS.find(exactText(task)).hover().find(".destroy").click();
+    @Step
+    private void destroyTask(String text) {
+        TASKS.find(exactText(text)).hover().find(".destroy").click();
     }
 
-    private void toggleTask(String task) {
-        TASKS.findBy(exactText(task)).find(".toggle").click();
+    @Step
+    private void toggleTask(String text) {
+        TASKS.findBy(exactText(text)).find(".toggle").click();
     }
 
+    @Step
     private void clearCompleted(){
         CLEAR_COMPLETED.click();
     }
 
-    private void editTask(String taskToEdit, String newTask) {
-        TASKS.findBy(exactText(taskToEdit)).find("label").doubleClick();
-        TASKS.find(cssClass("editing")).find(".edit").val(newTask).pressEnter();
+    @Step
+    private void editTask(String textToEdit, String newText) {
+        TASKS.findBy(exactText(textToEdit)).find("label").doubleClick();
+        TASKS.find(cssClass("editing")).find(".edit").val(newText).pressEnter();
     }
 
     private void assertShownTasks(String... visibleTasks) {
@@ -207,5 +206,16 @@ public class TodomvcTest {
 
     private void assertCompletedCount(int n) {
         CLEAR_COMPLETED.shouldHave(text("(" + n + ")"));
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        screenshot();
+    }
+
+    @Attachment(type = "image/png")
+    public byte[] screenshot() throws IOException {
+        File screenshot = Screenshots.getScreenShotAsFile();
+        return Files.toByteArray(screenshot);
     }
 }
