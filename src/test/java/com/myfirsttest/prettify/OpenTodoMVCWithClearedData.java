@@ -8,7 +8,7 @@ import java.io.IOException;
 import static com.codeborne.selenide.Selenide.executeJavaScript;
 import static com.codeborne.selenide.Selenide.open;
 
-public class OpenTodoMVCWithClearedDataAfterEachTest {
+public class OpenTodoMVCWithClearedData {
 
     @Before
     public void setUp() {

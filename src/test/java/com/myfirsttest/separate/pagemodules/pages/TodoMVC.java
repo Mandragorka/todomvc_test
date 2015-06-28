@@ -12,9 +12,7 @@ import static com.codeborne.selenide.Selenide.$$;
 
 public class TodoMVC {
 
-
     public static ElementsCollection tasks = $$("#todo-list>li");
-
 
     @Step
     public static void filterAll() {
@@ -47,7 +45,7 @@ public class TodoMVC {
     }
 
     @Step
-    public static void toggleAll () {
+    public static void toggleAll() {
         $("#toggle-all").click();
     }
 
@@ -62,11 +60,11 @@ public class TodoMVC {
         tasks.find(cssClass("editing")).find(".edit").val(newText).pressEnter();
     }
 
-    public static void assertVisibleTasks (String... visibleTaskText) {
+    public static void assertVisibleTasks(String... visibleTaskText) {
         tasks.filter(visible).shouldHave(exactTexts(visibleTaskText));
     }
 
-    public static void assertTasks (String... taskText) {
+    public static void assertTasks(String... taskText) {
         TodoMVC.tasks.shouldHave(exactTexts(taskText));
     }
 

@@ -18,8 +18,7 @@ import static com.myfirsttest.separate.pagemodules.pages.TodoMVC.tasks;
 import static com.myfirsttest.separate.pagemodules.pages.TodoMVC.toggleAll;
 import static com.myfirsttest.separate.pagemodules.pages.TodoMVC.toggleTask;
 
-
-public class TodomvcTest extends OpenTodoMVCWithClearedDataBeforeEachTest {
+public class TodomvcTest extends OpenTodoMVCWithClearedData {
 
     @Test
     public void testAtAllFilter() {

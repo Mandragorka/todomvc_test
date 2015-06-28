@@ -22,8 +22,7 @@ import static com.codeborne.selenide.Selenide.$$;
 import static com.codeborne.selenide.Selenide.executeJavaScript;
 import static com.codeborne.selenide.Selenide.open;
 
-
-public class TodomvcTest extends OpenTodoMVCWithClearedDataAfterEachTest {
+public class TodomvcTest extends OpenTodoMVCWithClearedData {
 
     public static ElementsCollection tasks = $$("#todo-list>li");
 

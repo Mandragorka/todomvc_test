@@ -8,10 +8,9 @@ import static com.codeborne.selenide.CollectionCondition.exactTexts;
 import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.visible;
 
+public class TodomvcTest extends OpenTodoMVCWithClearedData {
 
-public class TodomvcTest extends OpenTodoMVCWithClearedDataBeforeEachTest {
-
-    TodoMVC page = new TodoMVC();
+    private TodoMVC page = new TodoMVC();
 
     @Test
     public void testAtAllFilter() {
@@ -130,12 +129,12 @@ public class TodomvcTest extends OpenTodoMVCWithClearedDataBeforeEachTest {
         page.tasks.filter(visible).shouldBe(empty);
     }
 
-    public void assertVisibleTasks (String... visibleTaskText) {
+    public void assertVisibleTasks(String... visibleTaskText) {
         page.tasks.filter(visible).shouldHave(exactTexts(visibleTaskText));
     }
 
-    public void assertTasks (String... tasksText) {
-        page.tasks.shouldHave(exactTexts(tasksText));
+    public void assertTasks(String... taskText) {
+        page.tasks.shouldHave(exactTexts(taskText));
     }
 
     public void assertItemsLeftCounter(int n) {

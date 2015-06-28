@@ -11,7 +11,6 @@ import static com.codeborne.selenide.Selenide.$$;
 
 public class TodoMVC {
 
-
     public ElementsCollection tasks = $$("#todo-list>li");
 
     @Step
@@ -47,7 +46,7 @@ public class TodoMVC {
     }
 
     @Step
-    public void toggleAll () {
+    public void toggleAll() {
         $("#toggle-all").click();
     }
 
@@ -57,7 +56,7 @@ public class TodoMVC {
     }
 
     @Step
-    public void editTask (String textToEdit, String newText) {
+    public void editTask(String textToEdit, String newText) {
         tasks.findBy(exactText(textToEdit)).find("label").doubleClick();
         tasks.find(cssClass("editing")).find(".edit").val(newText).pressEnter();
     }

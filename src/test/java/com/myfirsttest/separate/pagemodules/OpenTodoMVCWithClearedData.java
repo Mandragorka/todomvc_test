@@ -1,4 +1,4 @@
-package com.myfirsttest.separate.pageobjects;
+package com.myfirsttest.separate.pagemodules;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -6,7 +6,7 @@ import org.junit.BeforeClass;
 import static com.codeborne.selenide.Selenide.executeJavaScript;
 import static com.codeborne.selenide.Selenide.open;
 
-public class OpenTodoMVCWithClearedDataBeforeEachTest extends WithReporteScreenshotsPerTest {
+public class OpenTodoMVCWithClearedData extends WithReporteScreenshotsPerTest {
 
     @BeforeClass
     public static void openTodoMVCPage() {
@@ -20,7 +20,7 @@ public class OpenTodoMVCWithClearedDataBeforeEachTest extends WithReporteScreens
         openTodoMVC();
     }
 
-    public static void openTodoMVC() {
+    private static void openTodoMVC() {
         open("http://todomvc.com/examples/troopjs_require/#");
     }
 }
