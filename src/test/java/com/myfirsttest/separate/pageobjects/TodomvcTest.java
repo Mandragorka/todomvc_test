@@ -4,7 +4,9 @@ import com.myfirsttest.separate.pageobjects.pages.TodoMVC;
 import org.junit.Test;
 
 import static com.codeborne.selenide.CollectionCondition.empty;
-import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.CollectionCondition.exactTexts;
+import static com.codeborne.selenide.Condition.exactText;
+import static com.codeborne.selenide.Condition.visible;
 
 
 public class TodomvcTest extends OpenTodoMVCWithClearedDataBeforeEachTest {
@@ -13,134 +15,130 @@ public class TodomvcTest extends OpenTodoMVCWithClearedDataBeforeEachTest {
 
     @Test
     public void testAtAllFilter() {
-
-        // Precondition
-        page.addTask("a");
-        page.addTask("b");
-        page.addTask("c");
-        page.addTask("d");
-        page.assertShownTasks("a", "b", "c", "d");
-        page.assertItemsLeftCounter(4);
-
-        // Delete task
-        page.destroyTask("b");
-        page.assertShownTasks("a", "c", "d");
-        page.assertItemsLeftCounter(3);
-
-        // Mark tasks as completed
-        page.toggleTask("d");
-        page.assertItemsLeftCounter(2);
-        //page.assertCompletedCount(1);
-        page.toggleTask("c");
-        page.assertItemsLeftCounter(1);
-        //page.assertCompletedCount(2);
-
-        // Displaying tasks at active filter
-        page.filterActive();
-        page.assertShownTasks("a");
-
-        // Displaying tasks at completed filter
-        page.filterCompleted();
-        page.assertShownTasks("c", "d");
-
-        page.filterAll();
-        page.clearCompleted();
-        page.assertShownTasks("a");
+        // Create tasks
+        page.add("a").add("b").add("c").add("d");
+        assertTasks("a", "b", "c", "d");
+        assertItemsLeftCounter(4);
 
         // Editing of existing task
-        page.editTask("a", "all: a edited");
-        page.assertShownTasks("all: a edited");
+        page.editTask("a", "a edited");
+        assertTasks("a edited", "b", "c", "d");
+
+        // Delete task
+        page.deleteTask("b");
+        assertTasks("a edited", "c", "d");
+        assertItemsLeftCounter(3);
+
+        // Mark tasks as completed
+        page.toggleTask("d").toggleTask("c");
+        assertItemsLeftCounter(1);
+
+        // Mark task as reopened
+        page.toggleTask("c");
+        assertItemsLeftCounter(2);
+
+        page.clearCompleted();
+        assertTasks("a edited", "c");
 
         // Mark all left tasks as completed and then their removing
-        $("#toggle-all").click();
-        page.assertItemsLeftCounter(0);
-        //page.assertCompletedCount(1);
+        page.toggleAll();
+        assertItemsLeftCounter(0);
         page.clearCompleted();
-        page.TASKS.shouldBe(empty);
+        page.tasks.shouldBe(empty);
     }
 
     @Test
     public void testAtActiveFilter() {
-        // Precondition
-        page.addTask("a");
-        page.addTask("b");
-        page.assertShownTasks("a", "b");
-        page.assertItemsLeftCounter(2);
-
+        // Given
+        page.add("a").add("b");
+        page.toggleTask("b");
+        page.add("c");
+        page.toggleTask("c");
+        page.toggleTask("c");
         page.filterActive();
+        assertItemsLeftCounter(2);
+        assertVisibleTasks("a", "c");
+
         // Create task under Active filter
-        page.addTask("c");
-        page.assertShownTasks("a", "b", "c");
-        page.assertItemsLeftCounter(3);
+        page.add("d");
+        assertVisibleTasks("a", "c", "d");
+        assertItemsLeftCounter(3);
+        page.filterAll();
+        assertTasks("a", "b", "c", "d");
+        page.filterActive();
 
         // Editing of existing task
-        page.editTask("a", "active: a edited");
-        page.assertShownTasks("active: a edited", "b", "c");
+        page.editTask("a", "a edited from active");
+        assertVisibleTasks("a edited from active", "c", "d");
 
         // Delete task
-        page.destroyTask("active: a edited");
-        page.assertItemsLeftCounter(2);
-        page.assertShownTasks("b", "c");
+        page.deleteTask("a edited from active");
+        assertItemsLeftCounter(2);
+        assertVisibleTasks("c", "d");
 
         // Mark tasks as completed
-        page.toggleTask("c");
-        page.assertItemsLeftCounter(1);
-        //page.assertCompletedCount(1);
-        page.assertShownTasks("b");
+        page.toggleTask("d");
+        assertItemsLeftCounter(1);
+        assertVisibleTasks("c");
 
-        // Displaying tasks at completed filter
         page.filterCompleted();
-        page.assertShownTasks("c");
-
+        assertVisibleTasks("b", "d");
         page.filterAll();
+
         // Mark task as reopened
-        page.toggleTask("c");
-        page.assertItemsLeftCounter(2);
-
-        // Displaying tasks at all filter
+        page.toggleTask("b");
+        assertItemsLeftCounter(2);
+        assertVisibleTasks("b", "c", "d");
         page.filterActive();
-        page.assertShownTasks("b", "c");
+        assertVisibleTasks("b", "c");
 
+        page.toggleAll();
+        page.tasks.filter(visible).shouldBe(empty);
     }
 
     @Test
     public void testAtCompletedFilter() {
-        // Precondition
-        page.addTask("a");
-        page.addTask("b");
-        page.addTask("c");
-        page.assertShownTasks("a", "b", "c");
-        $("#toggle-all").click();
-
+        // Given
+        page.add("a").add("b").add("c");
+        page.toggleAll();
+        page.add("d");
         page.filterCompleted();
-        page.assertShownTasks("a", "b", "c");
-        page.assertItemsLeftCounter(0);
+        assertVisibleTasks("a", "b", "c");
+        assertItemsLeftCounter(1);
 
         // Mark task as reopened
         page.toggleTask("c");
-        page.assertItemsLeftCounter(1);
-        //page.assertCompletedCount(2);
-        page.assertShownTasks("a", "b");
+        assertItemsLeftCounter(2);
+        assertVisibleTasks("a", "b");
+        page.filterAll();
+        assertVisibleTasks("a", "b", "c", "d");
+        page.filterActive();
+        assertVisibleTasks("c", "d");
+        page.filterCompleted();
 
         // Editing of existing task
-        page.editTask("b", "completed: b edited");
-        page.assertShownTasks("a", "completed: b edited");
+        page.editTask("b", "b edited from completed");
+        assertVisibleTasks("a", "b edited from completed");
+
         // Delete edited task and then removing all completed tasks
-        page.destroyTask("completed: b edited");
-        //page.assertCompletedCount(1);
-        page.assertItemsLeftCounter(1);
-        page.assertShownTasks("a");
-
-        // Displaying tasks at active filter
-        page.filterActive();
-        page.assertShownTasks("c");
-
-        // Displaying tasks at all filter
-        page.filterAll();
-        page.assertShownTasks("a", "c");
+        page.deleteTask("b edited from completed");
+        assertItemsLeftCounter(2);
+        assertVisibleTasks("a");
 
         page.filterCompleted();
         page.clearCompleted();
+        page.tasks.filter(visible).shouldBe(empty);
     }
 
+    public void assertVisibleTasks (String... visibleTaskText) {
+        page.tasks.filter(visible).shouldHave(exactTexts(visibleTaskText));
+    }
+
+    public void assertTasks (String... tasksText) {
+        page.tasks.shouldHave(exactTexts(tasksText));
+    }
+
+    public void assertItemsLeftCounter(int n) {
+        page.getTodoCount().shouldHave(exactText(Integer.toString(n)));
+    }
 }
