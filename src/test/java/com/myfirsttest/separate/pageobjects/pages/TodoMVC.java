@@ -4,8 +4,10 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import ru.yandex.qatools.allure.annotations.Step;
 
+import static com.codeborne.selenide.CollectionCondition.exactTexts;
 import static com.codeborne.selenide.Condition.cssClass;
 import static com.codeborne.selenide.Condition.exactText;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
@@ -29,9 +31,8 @@ public class TodoMVC {
     }
 
     @Step
-    public TodoMVC add(String text) {
+    public void add(String text) {
         $("#new-todo").val(text).pressEnter();
-        return this;
     }
 
     @Step
@@ -65,4 +66,17 @@ public class TodoMVC {
         return $("#todo-count>strong");
     }
 
+
+
+    public void assertVisibleTasks(String... visibleTaskText) {
+        tasks.filter(visible).shouldHave(exactTexts(visibleTaskText));
+    }
+
+    public void assertTasks(String... taskText) {
+        tasks.shouldHave(exactTexts(taskText));
+    }
+
+    public void assertItemsLeftCounter(int n) {
+        getTodoCount().shouldHave(exactText(Integer.toString(n)));
+    }
 }
